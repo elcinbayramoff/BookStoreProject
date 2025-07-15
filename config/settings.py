@@ -5,14 +5,14 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 env.read_env(BASE_DIR / ".env")
-
+STATIC_ROOT = BASE_DIR / "staticfiles"
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
 #1. Random Secure Secret Key Yaratmaq+
 #2. Secret Key settingsde gorsenmesin+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DEBUG")
+DEBUG = True
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
@@ -26,6 +26,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #frameworks / libraries
+    'rest_framework',
+
+    #applications
+    'book',
+    'user',
 ]
 
 MIDDLEWARE = [
@@ -109,3 +115,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+REST_FRAMEWORK = {
+}
