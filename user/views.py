@@ -10,10 +10,6 @@ USERS = {
     6: {'id': 6, 'name': 'Anar', 'email': 'anar2890@gmail.com'},
 }
 
-@api_view(['GET'])
-def debug_view(request, id, word):
-    my_param = request.query_params.get('my_param')
-    return Response({"message": f"This is a debug view with the id {id} and word {word}.\nQuery parameters: {my_param}"}) 
 
 @api_view(['GET'])
 def user_list(request):
