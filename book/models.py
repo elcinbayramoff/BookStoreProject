@@ -40,7 +40,7 @@ class Book(models.Model):
     stock_count = models.IntegerField(default=0)
     class Meta:
         ...
-    
+        
     def __str__(self):
         return self.title
     
