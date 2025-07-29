@@ -40,6 +40,10 @@ class Book(models.Model):
     ], default='EN')
     stock_count = models.IntegerField(default=0)
     class Meta:
+        # ordering = ['-publication_date']
+        # verbose_name_plural = 'Books'
+        # verbose_name = 'Book'
+        # db_table = 'book'
         ...
     
     def __str__(self):
@@ -56,213 +60,71 @@ class Book(models.Model):
 
 #operations
 """
-create +
- a1 = Author.objects.create()
-read
-update
-delete
+# Create
+from book.models import Author, Book, Category
+from datetime import date
+a1 = Author.objects.create(name='Ali', birth_date=date(1975, 10, 16))
+a1 = Author.objects.create(name='Vali', birth_date=date(1950, 10, 16))
+a2 = Author.objects.create(name='Ali', birth_date=date(1975, 10, 16))
+c1 = Category.objects.create(name='Romantic')
+c2 = Category.objects.create(name='Comedy')
+b1 = Book.objects.create(title="Romeo and Julietta", author=a1, publication_date=date(2024, 4, 4), price=9.99, language='EN')
+b2 = Book.objects.create(title="Sefiller", author=a1, publication_date=date(2025, 4, 4), price=19.99, language='AZ')
+
+# Update
+b1.stock_count = 10
+b1.price = 15.99
+b1.save()
+
+# Read
+Author.objects.all()
+Book.objects.all()
+Book.objects.filter(id__in=[1, 2])
+Book.objects.filter(language='AZ')
+Book.objects.filter(price__lt=25)
+Book.objects.get(id=3)
+Book.objects.get(id=4)
+b1.categories.all()
+b1.language
+b1.price
+b1.stock_count
+
+# Update (M2M)
+b1.categories.add(c1)
+b1.categories.add(c2)
+b1.categories.set([c1])
+b1.categories.remove(c1)
+b1.categories.clear()
+b1.categories.add(c1)
+
+# Delete
+Book.objects.filter(id__in=[1, 2]).delete()
+
 """
+
 """
-python manage.py shell
-In [1]: from book.models import Author, Category, Book
+# Create
+category1 = Category.objects.create(name='Romantic')
+Category.objects.create(name='Romantic')
 
-In [2]: Author.objects.all()
-Out[2]: <QuerySet []>
+# Read / Query
+Category.objects.all()
+Category.objects.all()[4]
+Category.objects.all()[5].id
+Category.objects.all().first()
+Category.objects.all().last()
+Category.objects.all().first().id
+Category.objects.all().last().id
+Category.objects.all().exists()
+len(Category.objects.all())
 
-In [3]: a1 = Author.objects.create('name'='Ali )
-  Cell In[3], line 1
-    a1 = Author.objects.create('name'='Ali )
-                                      ^
-SyntaxError: unterminated string literal (detected at line 1)
+category1.name
+category1.id
+category1.__dict__
 
-
-In [4]: from datetime import date
-
-In [5]: 
-
-In [5]: a1 = Author.objects.create(name='Ali', birth_date=date(1975,10,16)
-   ...: )
-
-In [6]: a1
-Out[6]: <Author: Ali>
-
-In [7]: a1 = Author.objects.create(name='Vali', birth_date=date(1950,10,16))
-
-In [8]: c1 = Category.objects.create('Romantic')
----------------------------------------------------------------------------
-TypeError                                 Traceback (most recent call last)
-Cell In[8], line 1
-----> 1 c1 = Category.objects.create('Romantic')
-
-File ~/.local/lib/python3.12/site-packages/django/db/models/manager.py:85, in BaseManager._get_queryset_methods.<locals>.create_method.<locals>.manager_method(self, *args, **kwargs)
-     84 def manager_method(self, *args, **kwargs):
----> 85     return getattr(self.get_queryset(), name)(*args, **kwargs)
-
-TypeError: QuerySet.create() takes 1 positional argument but 2 were given
-
-In [9]: c1 = Category.objects.create(name='Romantic')
-
-In [10]: c1
-Out[10]: <Category: Romantic>
-
-In [11]: c2 = Category.objects.create(name='Comedy')
-
-In [12]: c2
-Out[12]: <Category: Comedy>
-
-In [13]: b1 = Book.objects.create(
-    ...: title="Romeo and Julietta",
-    ...: author=a1,
-    ...: publication_date=date(2024, 4, 4)
-    ...: ,price=9.99,
-    ...: language='EN')
-
-In [14]: b1
-Out[14]: <Book: Romeo and Julietta>
-
-In [15]: a2 = Author.objects.create(name='Ali', birth_date=date(1975,10,16)
-    ...: )
-
-In [16]: a1
-Out[16]: <Author: Vali>
-
-In [17]: a2
-Out[17]: <Author: Ali>
-
-In [18]: b1 = Book.objects.create(
-    ...: title="Sefiller",
-    ...: author=a1,
-    ...: publication_date=date(2025, 4, 4)
-    ...: ,price=19.99,
-    ...: language='AZ')
-
-In [19]: b1 = Book.objects.create(
-    ...: title="Romeo and Julietta",
-    ...: author=a1,
-    ...: publication_date=date(2024, 4, 4)
-    ...: ,price=9.99,
-    ...: language='EN')
-
-In [20]: b2 = Book.objects.create(
-    ...: title="Sefiller",
-    ...: author=a1,
-    ...: publication_date=date(2025, 4, 4)
-    ...: ,price=19.99,
-    ...: language='AZ')
-
-In [21]: Book.objects.all()
-Out[21]: <QuerySet [<Book: Romeo and Julietta>, <Book: Sefiller>, <Book: Romeo and Julietta>, <Book: Sefiller>]>
-
-In [22]: Book.objects.filter(id__in=[1,2]).delete()
-Out[22]: (2, {'book.Book': 2})
-
-In [23]: Book.objects.all()
-Out[23]: <QuerySet [<Book: Romeo and Julietta>, <Book: Sefiller>]>
-
-In [24]: b1.categories.add
-Out[24]: <bound method create_forward_many_to_many_manager.<locals>.ManyRelatedManager.add of <django.db.models.fields.related_descriptors.create_forward_many_to_many_manager.<locals>.ManyRelatedManager object at 0x766a0ea9c080>>
-
-In [25]: b1.categories.add(c1)
-
-In [26]: b1.categories.add(c2)
-
-In [27]: b1.categories.all()
-Out[27]: <QuerySet [<Category: Romantic>, <Category: Comedy>]>
-
-In [28]: b1.categories.set([c1])
-
-In [29]: b1.categories.all()
-Out[29]: <QuerySet [<Category: Romantic>]>
-
-In [30]: b1.categories.remove(c1)
-
-In [31]: b1.categories.all(
-    ...: )
-Out[31]: <QuerySet []>
-
-In [32]: b1.categories.add(c1)
-
-In [33]: b1.categories.add(c2)
-
-In [34]: b1.categories.clear()
-
-In [35]: b1.categories.all(
-    ...: )
-Out[35]: <QuerySet []>
-
-In [36]: b1.categories.add(c1)
-
-In [37]: b1.language
-Out[37]: 'EN'
-
-In [38]: b1.price
-Out[38]: 9.99
-
-In [39]: b1.stock_count
-Out[39]: 0
-
-In [40]: Book.objects.all()
-Out[40]: <QuerySet [<Book: Romeo and Julietta>, <Book: Sefiller>]>
-
-In [41]: Book.objects.filter(language='AZ')
-Out[41]: <QuerySet [<Book: Sefiller>]>
-
-In [42]: Book.objects.get(id=1)
----------------------------------------------------------------------------
-DoesNotExist                              Traceback (most recent call last)
-Cell In[42], line 1
-----> 1 Book.objects.get(id=1)
-
-File ~/.local/lib/python3.12/site-packages/django/db/models/manager.py:85, in BaseManager._get_queryset_methods.<locals>.create_method.<locals>.manager_method(self, *args, **kwargs)
-     84 def manager_method(self, *args, **kwargs):
----> 85     return getattr(self.get_queryset(), name)(*args, **kwargs)
-
-File ~/.local/lib/python3.12/site-packages/django/db/models/query.py:496, in QuerySet.get(self, *args, **kwargs)
-    494     return clone._result_cache[0]
-    495 if not num:
---> 496     raise self.model.DoesNotExist(
-    497         "%s matching query does not exist." % self.model._meta.object_name
-    498     )
-    499 raise self.model.MultipleObjectsReturned(
-    500     "get() returned more than one %s -- it returned %s!"
-    501     % (
-   (...)    504     )
-    505 )
-
-DoesNotExist: Book matching query does not exist.
-
-In [43]: Book.objects.get(id=2)
----------------------------------------------------------------------------
-DoesNotExist                              Traceback (most recent call last)
-Cell In[43], line 1
-----> 1 Book.objects.get(id=2)
-
-File ~/.local/lib/python3.12/site-packages/django/db/models/manager.py:85, in BaseManager._get_queryset_methods.<locals>.create_method.<locals>.manager_method(self, *args, **kwargs)
-     84 def manager_method(self, *args, **kwargs):
----> 85     return getattr(self.get_queryset(), name)(*args, **kwargs)
-
-File ~/.local/lib/python3.12/site-packages/django/db/models/query.py:496, in QuerySet.get(self, *args, **kwargs)
-    494     return clone._result_cache[0]
-    495 if not num:
---> 496     raise self.model.DoesNotExist(
-    497         "%s matching query does not exist." % self.model._meta.object_name
-    498     )
-    499 raise self.model.MultipleObjectsReturned(
-    500     "get() returned more than one %s -- it returned %s!"
-    501     % (
-   (...)    504     )
-    505 )
-
-DoesNotExist: Book matching query does not exist.
-
-In [44]: Book.objects.get(id=3)
-Out[44]: <Book: Romeo and Julietta>
-
-In [45]: Book.objects.get(id=4)
-Out[45]: <Book: Sefiller>
-
-In [46]: Book.objects.filter(price__lt=25)
-Out[46]: <QuerySet [<Book: Romeo and Julietta>, <Book: Sefiller>]>
+# Delete
+category1.delete()
+Category.objects.all().delete()
 
 
 """
