@@ -1,4 +1,5 @@
 from django.db import models
+from pkg_resources import require
 
 # author 5 - book 3, book 4 -
 # Cascade - author deletion will delete all their books
