@@ -8,7 +8,6 @@ Book endpoints:
 """
 
 urlpatterns = [
-    path('debug/<int:id>/<str:word>/', views.debug_view),
-    path('books/', views.book_list),
+    path('books/', views.book_list_create),
     path('books/<int:id>/', views.book_detail),
 ]
