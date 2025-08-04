@@ -4,60 +4,31 @@ from .models import Book
 from .models import Author
 from .models import Category
 from datetime import date
+from .serializers import BookListSerializer, BookSerializer
+from django.shortcuts import get_object_or_404
 
 @api_view(['GET', 'POST'])
 def book_list_create(request): 
+
     if request.method == 'GET':
         books = Book.objects.all()
-        author = request.query_params.get('author') #/books/?author=John
-        if author:
-            books = books.filter(author__name=author)
-        
-        data = []
-        for book in books:
-            data.append({
-                'id': book.id,
-                'title': book.title,
-                'publication_date': book.publication_date,
-                'price': str(book.price),
-                'language': book.language
-            })
+        serializer = BookListSerializer(books, many=True)
+        data = serializer.data
         return Response(data)
     
 
     elif request.method == 'POST':
-        data = request.data
-        book = Book.objects.create(
-            title=data['title'],
-            author_id=data['author_id'],
-            publication_date=data['publication_date'],
-            price=data['price'],
-            language=data['language']
-        )
-        """
-        request data = {
-            "title": "Sefiller",
-            "author_id": 19,
-            "publication_date": "2025-04-04",
-            "price": 19.99,
-            "language": "AZ",
-        }
-        
-        """
-
-        book.categories.set(data.get('categories', []))
-        return Response({
-            'id': book.id,
-            'title': book.title,
-            'publication_date': book.publication_date,
-            'price': str(book.price),
-            'language': book.language,
-            'categories': [category.name for category in book.categories.all()]
-        })
+        serializer = BookSerializer(data=request.data)
+        # if not serializer.is_valid():
+        #     return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        book = serializer.save()
+        return Response(serializer.data, status=201)
     
 
 @api_view(['GET','PUT','DELETE'])
 def book_detail(request, id): # patch - partial update
+    book = get_object_or_404(Book, id=id)
     if request.method == 'GET':
         try:
             book = Book.objects.get(id=id) # if .filter(id=id).exists():
