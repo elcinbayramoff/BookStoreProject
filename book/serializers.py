@@ -56,3 +56,53 @@ class BookSerializer(serializers.Serializer):
 
 """        setattr(instance,'title','Updated Title')
         instance.title = 'Updated Title'"""
+        
+   
+class AuthorListSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=255)
+    
+   
+
+class AuthorSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    biography = serializers.CharField(allow_null=True, allow_blank=True)
+    name = serializers.CharField(max_length=255)
+    birth_date = serializers.DateField()
+
+
+    def create(self, validated_data):
+        author = Author.objects.create(**validated_data)
+        return author
+
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance
+    
+    
+class CategoryListSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=255)
+    
+
+
+class CategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=255)
+
+
+
+    def create(self, validated_data):
+        category = Category.objects.create(**validated_data)
+        return category
+    
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance
+
