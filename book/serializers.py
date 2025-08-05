@@ -56,3 +56,17 @@ class BookSerializer(serializers.Serializer):
 
 """        setattr(instance,'title','Updated Title')
         instance.title = 'Updated Title'"""
+
+class CategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=100)
+    description = serializers.CharField(required=False, allow_blank=True)
+
+    def create(self, validated_data):
+        return Category.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance

@@ -6,6 +6,7 @@ from .models import Category
 from datetime import date
 from .serializers import BookListSerializer, BookSerializer
 from django.shortcuts import get_object_or_404
+from .serializers import AuthorSerializer, CategorySerializer
 
 @api_view(['GET', 'POST'])
 def book_list_create(request): 
@@ -255,5 +256,22 @@ def category_detail(request, id):
     elif request.method == 'DELETE':
         category.delete()
         return Response({'message': 'Category deleted successfully'}, status=204)
+
+@api_view(['GET', 'POST'])
+def category_list_create(request): 
+
+     if request.method == 'GET':
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
     
+
+    elif request.method == 'POST':
+        serializer = CategorySerializer(data=request.data)
+        # if not serializer.is_valid():
+        #     return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        category = serializer.save()
+        return Response(serializer.data, status=201)
+
 
