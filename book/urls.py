@@ -8,6 +8,7 @@ Book endpoints:
 """
 
 urlpatterns = [
-    path('books/', views.book_list_create),
-    path('books/<int:id>/', views.book_detail),
+    path('books/', views.BookListCreateAPIView.as_view()),
+    path('books/<int:id>/', views.BookDetailAPIView.as_view()),
+    path('health_check/', views.HealthCheckAPIView.as_view()),
 ]
