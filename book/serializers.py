@@ -62,14 +62,13 @@ class AuthorListSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=255)
     
-    
+   
 
 class AuthorSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
+    biography = serializers.CharField(allow_null=True, allow_blank=True)
     name = serializers.CharField(max_length=255)
     birth_date = serializers.DateField()
-    country = serializers.CharField(max_length=50)
-
 
 
     def create(self, validated_data):
@@ -93,7 +92,6 @@ class CategoryListSerializer(serializers.Serializer):
 class CategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=255)
-    description = serializers.CharField(required=False, allow_blank=True)
 
 
 
