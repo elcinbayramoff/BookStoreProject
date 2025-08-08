@@ -5,8 +5,8 @@ from .models import Author
 from .models import Category
 from datetime import date
 from .serializers import BookListModelSerializer, BookModelSerializer
-from .serializers import AuthorListSerializer, AuthorSerializer
-from .serializers import CategoryListSerializer, CategorySerializer
+from .serializers import AuthorListModelSerializer, AuthorModelSerializer
+from .serializers import CategoryListModelSerializer, CategoryModelSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 
@@ -85,37 +85,34 @@ class BookDetailAPIView(APIView):
 
 #books/5/ -POST AUTHOR
 
-@api_view(['GET', 'POST'])
-def author_list_create(request):
-    if request.method == 'GET':
+class AuthorListCreateAPIView(APIView):
+    def get(self, request):
         authors = Author.objects.all()
-        serializer = AuthorListSerializer(authors, many=True)
-        data = serializer.data
-        return Response(data)
-
-    elif request.method == 'POST':
-        serializer = AuthorSerializer(data=request.data)
-        # if not serializer.is_valid():
-        #     return Response(serializer.errors, status=400)
-        serializer.is_valid(raise_exception=True)
-        author = serializer.save()
-        return Response(serializer.data, status=201)
-
-
-@api_view(['GET', 'PUT', 'DELETE'])
-def author_detail(request, id):
-    author = get_object_or_404(Author, id=id)
-    if request.method == 'GET':
-        serializer = AuthorSerializer(author)
+        serializer = AuthorListModelSerializer(authors, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
-        serializer = AuthorSerializer(author, data=request.data)
+    def post(self, request):
+        serializer = AuthorModelSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
-    elif request.method == 'DELETE':
+
+class AuthorDetailAPIView(APIView):
+    def get(self, request, id):
+        author = get_object_or_404(Author, id=id)
+        serializer = AuthorModelSerializer(author)
+        return Response(serializer.data)
+
+    def put(self, request, id):
+        author = get_object_or_404(Author, id=id)
+        serializer = AuthorModelSerializer(author, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, id):
+        author = get_object_or_404(Author, id=id)
         author.delete()
         return Response({'message': 'Author deleted successfully'},status=204)
 
