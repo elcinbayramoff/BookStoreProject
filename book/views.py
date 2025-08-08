@@ -42,34 +42,38 @@ class BookDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BookModelSerializer
 
 class AuthorListCreateAPIView(APIView):
-    def get(self, request):
-        authors = Author.objects.all()
-        serializer = AuthorModelSerializer(authors, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = AuthorModelSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    queryset = Author.objects.all()
+    serializer_class = AuthorModelSerializer
 
 class AuthorDetailAPIView(APIView):
-    def get(self, request, id):
-        author = get_object_or_404(Author, id=id)
-        serializer = AuthorModelSerializer(author)
-        return Response(serializer.data)
+    queryset = Author.objects.all()
+    serializer_class = AuthorModelSerializer
 
-    def put(self, request, id):
-        author = get_object_or_404(Author, id=id)
-        serializer = AuthorModelSerializer(author, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+class CategoryListCreateAPIView(APIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryModelSerializer
+    
+class CategoryDetailAPIView(APIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryModelSerializer
 
-    def delete(self, request, id):
-        author = get_object_or_404(Author, id=id)
-        author.delete()
-        return Response({'message': 'Author deleted successfully'},status=204)
+# class AuthorDetailAPIView(APIView):
+#     def get(self, request, id):
+#         author = get_object_or_404(Author, id=id)
+#         serializer = AuthorModelSerializer(author)
+#         return Response(serializer.data)
+
+#     def put(self, request, id):
+#         author = get_object_or_404(Author, id=id)
+#         serializer = AuthorModelSerializer(author, data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data)
+
+#     def delete(self, request, id):
+#         author = get_object_or_404(Author, id=id)
+#         author.delete()
+#         return Response({'message': 'Author deleted successfully'},status=204)
 
 class CategoryListCreateAPIView(APIView):
     def get(self, request):
