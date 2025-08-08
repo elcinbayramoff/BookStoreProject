@@ -13,4 +13,6 @@ urlpatterns = [
     path('health_check/', views.HealthCheckAPIView.as_view()),
     path('author/', views.AuthorListCreateAPIView.as_view()),
     path('author/<int:id>/', views.AuthorDetailAPIView.as_view()),
+    path('category/', views.CategoryListCreateAPIView.as_view()),
+    path('category/<int:id>/', views.CategoryDetailAPIView.as_view()),
 ]
