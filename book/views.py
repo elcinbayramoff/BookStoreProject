@@ -6,7 +6,7 @@ from .models import Category
 from datetime import date
 from .serializers import BookListModelSerializer, BookModelSerializer
 from .serializers import AuthorListModelSerializer, AuthorModelSerializer
-from .serializers import CategoryListModelSerializer, CategoryModelSerializer, CategoryListSerializer
+from .serializers import CategoryListModelSerializer, CategoryModelSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 
