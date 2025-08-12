@@ -52,6 +52,10 @@ class AuthorListCreateAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+    
+class AuthorListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorModelSerializer
 
 class AuthorDetailAPIView(APIView):
     def get(self, request, id):
@@ -70,6 +74,10 @@ class AuthorDetailAPIView(APIView):
         author = get_object_or_404(Author, id=id)
         author.delete()
         return Response({'message': 'Author deleted successfully'},status=204)
+    
+class AuthorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorModelSerializer
 
 class CategoryListCreateAPIView(APIView):
     def get(self, request):
@@ -82,6 +90,10 @@ class CategoryListCreateAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+class CategoryListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryModelSerializer
 
 class CategoryDetailAPIView(APIView):
     def get(self, request, id):
@@ -100,3 +112,7 @@ class CategoryDetailAPIView(APIView):
         category = get_object_or_404(Category, id=id)
         category.delete()
         return Response({'message': 'Category deleted successfully'},status=204)
+    
+class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryModelSerializer
