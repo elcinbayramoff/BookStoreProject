@@ -7,7 +7,7 @@ from .serializers import CategoryModelSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import generics
-
+from rest_framework import viewsets
 
 class HealthCheckAPIView(APIView):
     def get(self, request):
@@ -22,12 +22,34 @@ destroy - delete
 update - put/patch
 """
 #query_params = author_name
-class BookListCreateAPIView(generics.ListCreateAPIView):
+# class BookListCreateAPIView(generics.ListCreateAPIView):
+#     queryset = Book.objects.all()
+#     serializer_class = BookModelSerializer
+
+#     def get_serializer_class(self):
+#         if self.request.method == 'GET':
+#             return BookListModelSerializer
+#         return BookModelSerializer
+
+#     def get_queryset(self):
+#         author_name = self.request.query_params.get('author_name')
+#         if author_name:
+#             return self.queryset.filter(author__name=author_name)
+#         return self.queryset
+
+    # def post(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     def perform_create(self, serializer): # perform_update, perform_destroy
+    #         serializer.save()
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookModelSerializer
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
+        if self.action == 'list':
             return BookListModelSerializer
         return BookModelSerializer
 
@@ -37,9 +59,9 @@ class BookListCreateAPIView(generics.ListCreateAPIView):
             return self.queryset.filter(author__name=author_name)
         return self.queryset
 
-class BookDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookModelSerializer
+# class BookDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Book.objects.all()
+#     serializer_class = BookModelSerializer
 
 class AuthorListCreateAPIView(generics.ListCreateAPIView):
     queryset = Author.objects.all()
@@ -57,7 +79,18 @@ class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoryModelSerializer
 
-    
+
+"""
+get post put patch delete
+
+get - data lazimdir (retrieve - bir obyekt #TODO BookModelSerializer(book), list- bir nece obyekt #TODO BookListModelSerializer(books, many=True)) - elave data lazim deyil. 
+post - data lazim deyil (create) #TODO BookModelSerializer(data=request.data) - obyekt lazim deyil - ?
+put - data lazimdir (update) #TODO BookModelSerializer(book, data=request.data) - bir obyekt lazimdir - elave data lazimdir
+patch - data lazimdir (partial update) #TODO BookModelSerializer(book, data=request.data, partial=True) - bir obyekt lazimdir - elave data lazimdir.
+delete - data lazimdir (destroy) #TODO Book.objects.get(id=id).delete() - bir obyekt lazimdir - elave data lazim deyil.
+
+
+"""
     
 
 # class AuthorListCreateAPIView(APIView):
