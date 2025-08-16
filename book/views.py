@@ -63,21 +63,21 @@ class BookViewSet(viewsets.ModelViewSet):
 #     queryset = Book.objects.all()
 #     serializer_class = BookModelSerializer
 
-class AuthorListCreateAPIView(generics.ListCreateAPIView):
+class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorModelSerializer
 
-class AuthorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Author.objects.all()
-    serializer_class = AuthorModelSerializer
+# class AuthorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Author.objects.all()
+#     serializer_class = AuthorModelSerializer
 
-class CategoryListCreateAPIView(generics.ListCreateAPIView):
+class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryModelSerializer
 
-class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategoryModelSerializer
+# class CategoryDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Category.objects.all()
+#     serializer_class = CategoryModelSerializer
 
 
 """
