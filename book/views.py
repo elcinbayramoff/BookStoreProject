@@ -60,9 +60,46 @@ class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorModelSerializer
 
+
+    @action(detail=True, methods=['post'], url_path='discount')
+    def apply_discount(self, request, pk=None):
+  
+        author = self.get_object() # method 3
+        discount_percentage = request.data.get('discount_percentage', 0)
+        author.current_price = author.price * decimal.Decimal(1-discount_percentage/100)
+        author.discount_percentage = discount_percentage
+        author.save()
+        return Response({'message': 'Discount applied successfully', 'author': AuthorModelSerializer(author).data})
+
+    @action(detail=False, methods=['get'], url_path='most_discounted_authors')
+    def order_most_discounted_authors(self, request):
+        authors = self.queryset.order_by('-discount_percentage')
+        return Response(self.get_serializer(authors, many=True).data)
+
+
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryModelSerializer
+
+
+    @action(detail=True, methods=['post'], url_path='discount')
+    def apply_discount(self, request, pk=None):
+       
+        category = self.get_object() # method 3
+        discount_percentage = request.data.get('discount_percentage', 0)
+        category.current_price = category.price * decimal.Decimal(1-discount_percentage/100)
+        category.discount_percentage = discount_percentage
+        category.save()
+        return Response({'message': 'Discount applied successfully', 'category': CategoryModelSerializer(category).data})
+
+    @action(detail=False, methods=['get'], url_path='most_discounted_categorys')
+    def order_most_discounted_categorys(self, request):
+        categorys = self.queryset.order_by('-discount_percentage')
+        return Response(self.get_serializer(categorys, many=True).data)
+
+
 
 """
 get post put patch delete
