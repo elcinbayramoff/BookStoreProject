@@ -10,6 +10,8 @@ Book endpoints:
 """
 router = DefaultRouter()
 router.register('books', views.BookViewSet, basename='books')
+router.register('author', views.AuthorViewSet, basename='author')
+router.register('category', views.CategoryViewSet, basename='category')
 
 urlpatterns = [
     # path('books/', views.BookListCreateAPIView.as_view()),
