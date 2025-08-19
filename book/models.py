@@ -30,6 +30,8 @@ class Book(models.Model):
     publication_date = models.DateField()
     categories = models.ManyToManyField(Category, related_name='books', blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2) 
+    current_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    discount_percentage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     volume = models.PositiveSmallIntegerField(default=1)
     language = models.CharField(max_length=255, choices=[
         ('EN', 'English'),
@@ -55,6 +57,11 @@ class Book(models.Model):
         from datetime import date, timedelta
         return (date.today() - self.publication_date) < timedelta(days=365)
 
+    # @property
+    # def discounted_percentage(self):
+    #     if self.current_price is None:
+    #         return 0
+    #     return (1-self.current_price/self.price)*100
     
 
 #operations

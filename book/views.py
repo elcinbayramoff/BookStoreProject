@@ -8,6 +8,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import viewsets
+from rest_framework.decorators import action
+import decimal
 
 class HealthCheckAPIView(APIView):
     def get(self, request):
@@ -35,6 +37,24 @@ class BookViewSet(viewsets.ModelViewSet):
         if author_name:
             return self.queryset.filter(author__name=author_name)
         return self.queryset
+    
+    @action(detail=True, methods=['post'], url_path='discount')
+    def apply_discount(self, request, pk=None):
+        # book = self.queryset.filter(id=pk).first() # method 1
+        # book = self.queryset.get(id=pk) # method 2
+        book = self.get_object() # method 3
+        discount_percentage = request.data.get('discount_percentage', 0)
+        book.current_price = book.price * decimal.Decimal(1-discount_percentage/100)
+        book.discount_percentage = discount_percentage
+        book.save()
+        return Response({'message': 'Discount applied successfully', 'book': BookModelSerializer(book).data})
+
+    @action(detail=False, methods=['get'], url_path='most_discounted_books')
+    def order_most_discounted_books(self, request):
+        books = self.queryset.order_by('-discount_percentage')
+        return Response(self.get_serializer(books, many=True).data)
+
+
 
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()

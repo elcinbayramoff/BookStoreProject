@@ -25,4 +25,5 @@ books/ - create
 books/id/ - retrieve
 books/id/ -update|partial_update
 books/id/ -destroy
+books/id/discount/ - discount {'discount_percentage': 10}
 """

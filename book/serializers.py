@@ -11,7 +11,7 @@ class BookModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
-        read_only_fields = ['id'] 
+        read_only_fields = ['id','current_price'] 
         extra_kwargs = {
             'price':{
                 'min_value':0
