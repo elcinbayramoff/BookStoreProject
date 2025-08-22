@@ -15,3 +15,9 @@ def validate_book_price(sender, instance, **kwargs):
     price = instance.price
     if price < 0:
         raise ValueError('Price cannot be negative')
+
+
+"""
+If newly added category has the exact same name as the existing category,
+then we should not allow to add it. 
+"""
