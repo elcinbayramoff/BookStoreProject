@@ -1,5 +1,8 @@
 from django.contrib import admin
 from .models import Book
+from .models import Author
+from .models import Category
+
 # Register your models here.
 
 # @admin.register(Book)
@@ -18,3 +21,16 @@ class BookAdmin(admin.ModelAdmin):
     ordering = ['-publication_date']
     # fields = ['title', 'author', 'publication_date', 'price', 'current_price', 'discount_percentage']
     # read_only_fields = ['current_price']
+
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ['name', 'birth_date', 'biography']
+    list_filter = ['birth_date']
+    search_fields = ['name']
+    ordering = ['name']
+    
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+    ordering = ['name']
