@@ -59,6 +59,22 @@ class BookViewSet(viewsets.ModelViewSet):
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorModelSerializer
+    
+    @action(detail=True, methods=['post'], url_path='change_name')
+    def change_name(self, request, pk=None):
+        author = self.get_object()
+        new_name = request.data.get('name')
+        serializer = self.get_serializer_class(author, {'name':new_name}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Author name changed successfully', 'author': AuthorModelSerializer(author).data})
+
+    @action(detail=False, methods=['get'], url_path='by_name')
+    def by_name(self, request):
+        authors = self.queryset.order_by('name')
+        return Response(self.get_serializer(authors, many=True).data)
+
+
 
 
     @action(detail=True, methods=['post'], url_path='discount')
@@ -83,6 +99,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryModelSerializer
 
+<<<<<<< HEAD
 
     @action(detail=True, methods=['post'], url_path='discount')
     def apply_discount(self, request, pk=None):
@@ -101,6 +118,25 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 
+=======
+    @action(detail=True, methods=['post'], url_path='update_name')
+    def update_name(self, request, pk=None):
+        category = self.get_object()
+        new_name = request.data.get('name')
+        serializer = self.get_serializer_class(category, {'name':new_name}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Category name updated successfully','category': CategoryModelSerializer(category).data})
+    
+    @action(detail=False, methods=['get'], url_path='by_name')
+    def by_name(self, request):
+        categories = self.queryset.order_by('name')
+        return Response(self.get_serializer(categories, many=True).data)   
+    
+    
+    
+    
+>>>>>>> 7abccbc48a9e48cc7ef2d5f95cd939cba07cd7d6
 """
 get post put patch delete
 

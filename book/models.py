@@ -57,6 +57,9 @@ class Book(models.Model):
         from datetime import date, timedelta
         return (date.today() - self.publication_date) < timedelta(days=365)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+    
     # @property
     # def discounted_percentage(self):
     #     if self.current_price is None:
