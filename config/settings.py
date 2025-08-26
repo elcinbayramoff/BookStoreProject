@@ -116,3 +116,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
 }
+
+AUTH_USER_MODEL = 'user.User'
