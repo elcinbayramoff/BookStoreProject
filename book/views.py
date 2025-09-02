@@ -65,7 +65,7 @@ class AuthorViewSet(viewsets.ModelViewSet):
     def change_name(self, request, pk=None):
         author = self.get_object()
         new_name = request.data.get('name')
-        serializer = self.get_serializer_class(author, {'name':new_name}, partial=True)
+        serializer = self.get_serializer(author, {'name':new_name}, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'message': 'Author name changed successfully', 'author': AuthorModelSerializer(author).data})
@@ -85,7 +85,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def update_name(self, request, pk=None):
         category = self.get_object()
         new_name = request.data.get('name')
-        serializer = self.get_serializer_class(category, {'name':new_name}, partial=True)
+        serializer = self.get_serializer(category, {'name':new_name}, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'message': 'Category name updated successfully','category': CategoryModelSerializer(category).data})
