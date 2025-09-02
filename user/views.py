@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 
 from .models import OneTimeCode
 from .serializers import (
-    RegisterSerializer, UserPublicSerializer, ProfileSerializer,
+    RegisterSerializer, UserPublicSerializer, ProfileSerializer, UserSerializer,
     ActivationSendSerializer, ActivationVerifySerializer,
     LoginSerializer, LogoutSerializer,
     ForgotPasswordSerializer, ResetPasswordSerializer,
@@ -24,9 +24,9 @@ class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        ser = RegisterSerializer(data=request.data)
-        ser.is_valid(raise_exception=True)
-        user = ser.save()
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
 
         otp = OneTimeCode.objects.create(
             user=user,
@@ -164,7 +164,16 @@ class MeView(RetrieveUpdateAPIView):
         return self.request.user
 
     def patch(self, request, *args, **kwargs):
-        prof_ser = ProfileSerializer(request.user.profile, data=request.data.get('profile', {}), partial=True)
+        user = self.get_object()
+        request_data = request.data.copy()
+        profile_data = request_data.pop('profile', {})
+
+        user_ser = UserSerializer(user, data=request_data, partial=True)
+        user_ser.is_valid(raise_exception=True)
+        user_ser.save()
+
+        prof_ser = ProfileSerializer(user.profile, data=profile_data, partial=True)
         prof_ser.is_valid(raise_exception=True)
         prof_ser.save()
-        return Response(UserPublicSerializer(request.user).data)
+        
+        return Response(UserPublicSerializer(user).data)

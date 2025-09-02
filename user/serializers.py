@@ -23,9 +23,14 @@ class UserPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'phone_number', 'role',
+            'id', 'username', 'email', 'phone_number', 'role', 'first_name', 'last_name',
             'is_active', 'email_verified', 'phone_verified', 'profile'
         ]
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', "first_name", "last_name"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -64,7 +69,7 @@ class ActivationSendSerializer(serializers.Serializer):
 
 class ActivationVerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
-    code = serializers.CharField(max_length=12)
+    code = serializers.CharField(max_length=6)
 
     def validate(self, attrs):
         email, code = attrs['email'], attrs['code']
