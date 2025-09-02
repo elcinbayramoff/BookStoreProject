@@ -10,7 +10,7 @@ from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.decorators import action
 import decimal
-
+from rest_framework import permissions
 class HealthCheckAPIView(APIView):
     def get(self, request):
         return Response({'status':'ok'})
@@ -26,6 +26,7 @@ update - put/patch
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookModelSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action == 'list':

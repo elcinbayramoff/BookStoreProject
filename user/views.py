@@ -1,27 +1,170 @@
-from rest_framework.decorators import api_view
+from django.core.mail import send_mail
+from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework_simplejwt.tokens import RefreshToken
 
-USERS = {
-    1: {'id': 1, 'name': 'Ali', 'email': 'ali132@gmail.com'},
-    2: {'id': 2, 'name': 'Vali', 'email': 'aysel446@gmail.com'},
-    3: {'id': 3, 'name': 'Elvin', 'email': 'elvin21@gmail.com'},
-    4: {'id': 4, 'name': 'Selcan', 'email': 'selcan55@gmail.com'},
-    5: {'id': 5, 'name': 'Nigar', 'email': 'nigar2001@gmail.com'},
-    6: {'id': 6, 'name': 'Anar', 'email': 'anar2890@gmail.com'},
-}
+from django.contrib.auth import get_user_model
+
+from .models import OneTimeCode
+from .serializers import (
+    RegisterSerializer, UserPublicSerializer, ProfileSerializer,
+    ActivationSendSerializer, ActivationVerifySerializer,
+    LoginSerializer, LogoutSerializer,
+    ForgotPasswordSerializer, ResetPasswordSerializer,
+)
+from .utils import generate_numeric_code, expiry
 
 
-@api_view(['GET'])
-def user_list(request):
-    name = request.query_params.get('name')
-    users = USERS.values()
-    if name:
-        users = [user for user in users if user['name'] == name]
-    return Response(users)
+User = get_user_model()
 
-@api_view(['GET'])
-def user_detail(request, id):
-    user = USERS.get(id)
-    if not user:
-        return Response({"error": "User not found"}, status=404)
-    return Response(user)
+
+class RegisterView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        ser = RegisterSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.save()
+
+        otp = OneTimeCode.objects.create(
+            user=user,
+            purpose=OneTimeCode.Purpose.ACCOUNT_ACTIVATION,
+            code=generate_numeric_code(6),
+            expires_at=expiry(10),
+        )
+        send_mail(
+            subject='Your activation code',
+            message=f'Your code is: {otp.code}',
+            from_email=None,
+            recipient_list=[user.email],
+        )
+        return Response({'detail': 'Registered. Check email for activation code.'}, status=status.HTTP_201_CREATED)
+
+
+class ResendActivationOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        ser = ActivationSendSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.validated_data['user']
+
+        otp = OneTimeCode.objects.create(
+            user=user,
+            purpose=OneTimeCode.Purpose.ACCOUNT_ACTIVATION,
+            code=generate_numeric_code(6),
+            expires_at=expiry(10),
+        )
+        send_mail(
+            subject='Your activation code',
+            message=f'Your code is: {otp.code}',
+            from_email=None,
+            recipient_list=[user.email],
+        )
+        return Response({'detail': 'Activation code sent.'})
+
+
+class VerifyActivationView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        ser = ActivationVerifySerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.validated_data['user']
+        otp = ser.validated_data['otp']
+
+        user.is_active = True
+        user.email_verified = True
+        user.save(update_fields=['is_active', 'email_verified'])
+
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+
+        return Response({'detail': 'Account activated.'})
+
+
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        ser = LoginSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.validated_data['user']
+
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+
+        return Response({
+            'access': str(access),
+            'refresh': str(refresh),
+            'user': UserPublicSerializer(user).data,
+        })
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        ser = LogoutSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        token = RefreshToken(ser.validated_data['refresh'])
+        token.blacklist()
+        return Response(status=status.HTTP_205_RESET_CONTENT)
+
+
+class ForgotPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        ser = ForgotPasswordSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.validated_data['user']
+
+        otp = OneTimeCode.objects.create(
+            user=user,
+            purpose=OneTimeCode.Purpose.PASSWORD_RESET,
+            code=generate_numeric_code(6),
+            expires_at=expiry(10),
+        )
+        send_mail(
+            subject='Your password reset code',
+            message=f'Your code is: {otp.code}',
+            from_email=None,
+            recipient_list=[user.email],
+        )
+        return Response({'detail': 'Reset code sent if the email exists.'})
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        ser = ResetPasswordSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.validated_data['user']
+        otp = ser.validated_data['otp']
+        new_password = ser.validated_data['new_password']
+
+        user.set_password(new_password)
+        user.save(update_fields=['password'])
+
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+
+        return Response({'detail': 'Password reset successful.'})
+
+
+class MeView(RetrieveUpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserPublicSerializer
+
+    def get_object(self):
+        return self.request.user
+
+    def patch(self, request, *args, **kwargs):
+        prof_ser = ProfileSerializer(request.user.profile, data=request.data.get('profile', {}), partial=True)
+        prof_ser.is_valid(raise_exception=True)
+        prof_ser.save()
+        return Response(UserPublicSerializer(request.user).data)
