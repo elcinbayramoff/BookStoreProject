@@ -11,6 +11,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 import decimal
 from rest_framework import permissions
+from .permissions import (
+    CanManageBooks, 
+    CanApplyDiscount, 
+    CanManageAuthors, 
+    CanManageCategories,
+    IsSellerOrAdmin
+)
 class HealthCheckAPIView(APIView):
     def get(self, request):
         return Response({'status':'ok'})
@@ -26,7 +33,7 @@ update - put/patch
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookModelSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CanManageBooks]
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -39,7 +46,23 @@ class BookViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(author__name=author_name)
         return self.queryset
     
-    @action(detail=True, methods=['post'], url_path='discount')
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'list' or self.action == 'retrieve':
+            # Allow any authenticated user to view books
+            permission_classes = [permissions.IsAuthenticated]
+        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
+            # Only sellers and admins can create/update/delete books
+            permission_classes = [permissions.IsAuthenticated, IsSellerOrAdmin]
+        else:
+            # For custom actions, use the default permissions
+            permission_classes = self.permission_classes
+        
+        return [permission() for permission in permission_classes]
+    
+    @action(detail=True, methods=['post'], url_path='discount', permission_classes=[CanApplyDiscount])
     def apply_discount(self, request, pk=None):
         # book = self.queryset.filter(id=pk).first() # method 1
         # book = self.queryset.get(id=pk) # method 2
@@ -60,8 +83,22 @@ class BookViewSet(viewsets.ModelViewSet):
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorModelSerializer
+    permission_classes = [permissions.IsAuthenticated, CanManageAuthors]
     
-    @action(detail=True, methods=['post'], url_path='change_name')
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'list' or self.action == 'retrieve':
+            # Allow any authenticated user to view authors
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            # Only admins can create/update/delete authors
+            permission_classes = [permissions.IsAuthenticated, CanManageAuthors]
+        
+        return [permission() for permission in permission_classes]
+    
+    @action(detail=True, methods=['post'], url_path='change_name', permission_classes=[CanManageAuthors])
     def change_name(self, request, pk=None):
         author = self.get_object()
         new_name = request.data.get('name')
@@ -80,8 +117,22 @@ class AuthorViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryModelSerializer
+    permission_classes = [permissions.IsAuthenticated, CanManageCategories]
 
-    @action(detail=True, methods=['post'], url_path='update_name')
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'list' or self.action == 'retrieve':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [permissions.IsAuthenticated, CanManageCategories]
+        
+        return [permission() for permission in permission_classes]
+
+     
+    
+    @action(detail=True, methods=['post'], url_path='update_name', permission_classes=[CanManageCategories])
     def update_name(self, request, pk=None):
         category = self.get_object()
         new_name = request.data.get('name')
