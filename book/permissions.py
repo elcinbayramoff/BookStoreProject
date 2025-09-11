@@ -1,13 +1,14 @@
 from rest_framework import permissions
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 
-class IsAdminOrReadOnly(BasePermission):
+class IsAdminOrReadOnly(IsAuthenticated):
     """
     Custom permission to only allow admins to edit, but allow read access to all authenticated users.
     """
     
     def has_permission(self, request, view):
+        super().has_permission(request, view)
         # Read permissions for any authenticated user
         if request.method in permissions.SAFE_METHODS:
             return request.user.is_authenticated
@@ -16,24 +17,36 @@ class IsAdminOrReadOnly(BasePermission):
         return request.user.is_authenticated and request.user.role == 'admin'
 
 
-class IsSellerOrAdmin(BasePermission):
+class IsSellerOrAdmin(IsAuthenticated):
     """
     Custom permission to only allow sellers and admins to perform certain actions.
     """
     
     def has_permission(self, request, view):
+        super().has_permission(request, view)
         if not request.user.is_authenticated:
             return False
         
         return request.user.role in ['seller', 'admin']
 
+class IsCustomerOrAdmin(IsAuthenticated):
+    """
+    Custom permission to only allow customers and admins to perform certain actions.
+    """
+    
+    def has_permission(self, request, view):
+        super().has_permission(request, view)
+        if not request.user.is_authenticated:
+            return False
+        return request.user.role in ['customer', 'admin']
 
-class IsOwnerOrAdmin(BasePermission):
+class IsOwnerOrAdmin(IsAuthenticated):
     """
     Custom permission to only allow owners of an object or admins to edit it.
     """
     
     def has_object_permission(self, request, view, obj):
+        super().has_object_permission(request, view, obj)
         # Read permissions for any authenticated user
         if request.method in permissions.SAFE_METHODS:
             return request.user.is_authenticated
@@ -45,12 +58,13 @@ class IsOwnerOrAdmin(BasePermission):
         )
 
 
-class CanManageBooks(BasePermission):
+class CanManageBooks(IsAuthenticated):
     """
     Custom permission for book management based on user role.
     """
     
     def has_permission(self, request, view):
+        super().has_permission(request, view)
         if not request.user.is_authenticated:
             return False
         
@@ -69,24 +83,26 @@ class CanManageBooks(BasePermission):
         return False
 
 
-class CanApplyDiscount(BasePermission):
+class CanApplyDiscount(IsAuthenticated):
     """
     Custom permission to only allow sellers and admins to apply discounts.
     """
     
     def has_permission(self, request, view):
+        super().has_permission(request, view)
         if not request.user.is_authenticated:
             return False
         
         return request.user.role in ['seller', 'admin']
 
 
-class CanManageAuthors(BasePermission):
+class CanManageAuthors(IsAuthenticated):
     """
     Custom permission for author management.
     """
     
     def has_permission(self, request, view):
+        super().has_permission(request, view)
         if not request.user.is_authenticated:
             return False
         
@@ -94,12 +110,13 @@ class CanManageAuthors(BasePermission):
         return request.user.role == 'admin'
 
 
-class CanManageCategories(BasePermission):
+class CanManageCategories(IsAuthenticated):
     """
     Custom permission for category management.
     """
     
     def has_permission(self, request, view):
+        super().has_permission(request, view)
         if not request.user.is_authenticated:
             return False
         

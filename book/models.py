@@ -7,6 +7,8 @@ from django.db import models
 # SET_DEFAULT - author deletion will set the author field of their books to a default value
 # DO_NOTHING - author deletion will do nothing to their books
 
+from user.models import User
+
 
 class Author(models.Model):
     name = models.CharField(max_length=255)
@@ -66,6 +68,32 @@ class Book(models.Model):
     #         return 0
     #     return (1-self.current_price/self.price)*100
     
+
+class Order(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    books = models.ManyToManyField(Book, related_name='orders', through='OrderItem', blank=True)    
+    class OrderStatus(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        CONFIRMED = 'confirmed', 'Confirmed'
+        SHIPPED = 'shipped', 'Shipped'
+        DELIVERED = 'delivered', 'Delivered'
+        CANCELLED = 'cancelled', 'Cancelled'
+        RETURNED = 'returned', 'Returned'
+
+    status = models.CharField(max_length=255, choices=OrderStatus.choices, default=OrderStatus.PENDING)
+    ordered_at = models.DateTimeField(auto_now_add=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total_price(self):
+        return sum(item.price * item.quantity for item in self.orderitems.all())
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='orderitems')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='orderitems')
+    quantity = models.IntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
 #operations
 """

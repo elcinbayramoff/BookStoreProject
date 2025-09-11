@@ -1,23 +1,27 @@
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Book, Author, Category
-from .serializers import BookListModelSerializer, BookModelSerializer
+from .models import Book, Author, Category, Order, OrderItem
+from .serializers import BookListModelSerializer, BookModelSerializer, OrderItemModelSerializer, OrderModelSerializer   
 from .serializers import AuthorModelSerializer
 from .serializers import CategoryModelSerializer
-from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
-from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.decorators import action
 import decimal
-from rest_framework import permissions
+from rest_framework import permissions, status
+from django_filters import rest_framework as filters
+from rest_framework import filters as drf_filters
 from .permissions import (
     CanManageBooks, 
     CanApplyDiscount, 
     CanManageAuthors, 
     CanManageCategories,
-    IsSellerOrAdmin
+    IsSellerOrAdmin,
+    IsCustomerOrAdmin
 )
+from .paginators import CustomPageNumberPagination
+from .filters import BookFilter
+
+
 class HealthCheckAPIView(APIView):
     def get(self, request):
         return Response({'status':'ok'})
@@ -34,6 +38,12 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookModelSerializer
     permission_classes = [permissions.IsAuthenticated, CanManageBooks]
+    filter_backends = [filters.DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
+    search_fields = ['title', 'description', 'author__name', 'categories__name']
+    ordering_fields = ['price', 'publication_date', 'title', 'current_price', 'discount_percentage']
+    ordering = ['-publication_date']
+    pagination_class = CustomPageNumberPagination
+    filterset_class = BookFilter
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -41,9 +51,6 @@ class BookViewSet(viewsets.ModelViewSet):
         return BookModelSerializer
 
     def get_queryset(self):
-        author_name = self.request.query_params.get('author_name')
-        if author_name:
-            return self.queryset.filter(author__name=author_name)
         return self.queryset
     
     def get_permissions(self):
@@ -146,7 +153,51 @@ class CategoryViewSet(viewsets.ModelViewSet):
         categories = self.queryset.order_by('name')
         return Response(self.get_serializer(categories, many=True).data)   
     
+
+class OrderItemAPIView(APIView):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemModelSerializer
+    permission_classes = [IsCustomerOrAdmin]
+
+    def post(self, request):
+        order = Order.objects.create(customer=request.user)
+        data = request.data.copy()
+        for item in data:
+            item['order'] = order.id
+        serializer = self.serializer_class(data=data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Order created successfully', 'order items':serializer.data})
+
+class OrderAPIView(APIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderModelSerializer
+    permission_classes = [IsCustomerOrAdmin]
+
+
+    def get(self, request, pk=None):
+        if pk:
+            order = self.queryset.get(id=pk)
+            if order.customer != request.user:
+                return Response({'message': 'You are not authorized to view this order'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(self.serializer_class(order).data)
+
+        orders = self.queryset.filter(customer=request.user)
+        return Response(self.serializer_class(orders, many=True).data)
     
+    def patch(self, request, pk=None):
+        try:
+            order = self.queryset.get(id=pk)
+        except Order.DoesNotExist:
+            return Response({'message': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if order.customer != request.user:
+            return Response({'message': 'You are not authorized to update this order'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.serializer_class(order, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Order updated successfully', 'order': serializer.data})
     
     
 """

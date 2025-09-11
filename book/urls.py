@@ -15,6 +15,9 @@ router.register('category', views.CategoryViewSet, basename='category')
 
 urlpatterns = [
     path('health_check/', views.HealthCheckAPIView.as_view()),
+    path('order-items/', views.OrderItemAPIView.as_view()),
+    path('orders/', views.OrderAPIView.as_view()),
+    path('orders/<int:pk>/', views.OrderAPIView.as_view()),
 ] 
 
 urlpatterns += router.urls
